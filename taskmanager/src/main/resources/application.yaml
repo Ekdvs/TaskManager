@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: taskmanager
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/taskmanager?useSSL=false&serverTimezone=UTC
+    username: root
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+jwt:
+  secret: mySecretKeyForJwtToken123456
+  expiration: 86400000
