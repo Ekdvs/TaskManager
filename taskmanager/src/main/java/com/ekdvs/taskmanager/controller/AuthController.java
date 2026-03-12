@@ -18,34 +18,55 @@ public class AuthController {
         this.authService = authService;
     }
 
+
+    // REGISTER USER
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<?>> register(@RequestBody RegisterRequest request){
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(
-                        "User registered successfully",
-                        false,
-                        true,
-                        authService.register(request)
-                )
-        );
+        try {
+            Object registeredUser = authService.register(request);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(
+                            "User registered successfully",
+                            false,
+                            true,
+                            registeredUser
+                    )
+            );
+        } catch (Exception e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ApiResponse<>(
+                            "Registration failed: " + e.getMessage(),
+                            true,
+                            false,
+                            null
+                    ));
+        }
     }
 
+    // LOGIN USER
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<?>> login(@RequestBody LoginRequest request){
-
-        String token = authService.login(request);
-
-        // Wrap the token inside TokenResponse
-        TokenResponse tokenData = new TokenResponse( token);
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(
-                        "Login successful",
-                        false,
-                        true,
-                        tokenData
-                )
-        );
+        try {
+            String token = authService.login(request);
+            TokenResponse tokenData = new TokenResponse(token);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(
+                            "Login successful",
+                            false,
+                            true,
+                            tokenData
+                    )
+            );
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(401)
+                    .body(new ApiResponse<>(
+                            "Login failed: " + e.getMessage(),
+                            true,
+                            false,
+                            null
+                    ));
+        }
     }
 }
