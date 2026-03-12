@@ -1,7 +1,7 @@
 package com.ekdvs.taskmanager.entity;
 
 public enum TaskStatus {
-    TODo,
+    TODO,
     IN_PROGRESS,
     DONE
 }

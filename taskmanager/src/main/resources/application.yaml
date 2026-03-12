@@ -19,5 +19,5 @@ server:
   port: 8080
 
 jwt:
-  secret: mySecretKeyForJwtToken123456
+  secret: mySuperSecretKeyForJwtTokenGeneration1234567890
   expiration: 86400000

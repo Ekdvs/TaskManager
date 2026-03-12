@@ -1,4 +1,4 @@
 package com.ekdvs.taskmanager.service;
 
-public interface UserService {
+public interface TaskService {
 }
