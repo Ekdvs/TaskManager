@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/tasks")
 @CrossOrigin("*")
@@ -138,14 +140,18 @@ public class TaskController {
     }
 
     // --- GET TASKS FOR USER/ADMIN ---
+    // --- GET TASKS FOR USER/ADMIN ---
     @GetMapping("/getall")
-    public ResponseEntity<?> getTasks(Authentication authentication,
-                                      @RequestParam(defaultValue = "0") int page,
-                                      @RequestParam(defaultValue = "5") int size,
-                                      @RequestParam(defaultValue = "dueDate") String sortBy,
-                                      @RequestParam(required = false) TaskStatus status,
-                                      @RequestParam(required = false) TaskPriority priority) {
+    public ResponseEntity<?> getTasks(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "dueDate") String sortBy,
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(required = false) TaskPriority priority) {
+
         try {
+            // Fetch logged-in user
             User user = userRepository.findByEmail(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -158,20 +164,32 @@ public class TaskController {
                 tasks = taskService.getTasksForUser(user, status, priority, pageable);
             }
 
-            // Map each Task to TaskResponse to remove password
-            Page<TaskResponse> response = tasks.map(t -> ((TaskServiceImpl) taskService).mapToTaskResponse(t));
+            // Map Task → TaskResponse
+            Page<TaskResponse> taskResponses = tasks.map(t -> ((TaskServiceImpl) taskService).mapToTaskResponse(t));
 
+            // Flatten Page into stable JSON structure
+            Map<String, Object> pagedData = Map.of(
+                    "content", taskResponses.getContent(),
+                    "pageNumber", taskResponses.getNumber(),
+                    "pageSize", taskResponses.getSize(),
+                    "totalElements", taskResponses.getTotalElements(),
+                    "totalPages", taskResponses.getTotalPages(),
+                    "last", taskResponses.isLast()
+            );
+
+            // Return stable response
             return ResponseEntity.ok(
-                    java.util.Map.of(
+                    Map.of(
                             "message", "Tasks fetched successfully",
                             "error", false,
                             "success", true,
-                            "data", response
+                            "data", pagedData
                     )
             );
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
-                    java.util.Map.of(
+                    Map.of(
                             "message", "Failed: " + e.getMessage(),
                             "error", true,
                             "success", false
